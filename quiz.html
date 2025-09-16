@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Quiz Dostoevsky">
+    <meta name="theme-color" content="#0a0a1a">
+    <title>Quiz Dostoevsky - Che personaggio sei?</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500&display=swap');
+
+        :root {
+            --bg-primary: #0a0a1a;
+            --bg-secondary: #1a1a2e;
+            --bg-tertiary: #16213e;
+            --accent-gold: #d4af37;
+            --accent-red: #8b2635;
+            --accent-blue: #2e86ab;
+            --accent-green: #a23b72;
+            --text-primary: #f8f8f2;
+            --text-secondary: #a8a8a8;
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --shadow-primary: rgba(0, 0, 0, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Crimson Text', serif;
+            min-height: 100vh;
+            background: 
+                radial-gradient(circle at 20% 80%, var(--bg-tertiary) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, var(--accent-red) 0%, transparent 50%),
+                linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            position: relative;
+            padding: env(safe-area-inset-top, 20px) env(safe-area-inset-right, 20px) env(safe-area-inset-bottom, 20px) env(safe-area-inset-left, 20px);
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--accent-gold);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.3; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 0.6; }
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            max-width: 420px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 15px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+            padding: 10px 15px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-1px);
+        }
+
+        .quiz-title {
+            font-size: clamp(1.8rem, 6vw, 2.5rem);
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--accent-gold), #ffd700, var(--accent-gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+            line-height: 1.2;
+        }
+
+        .quiz-subtitle {
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            color: var(--text-secondary);
+            font-weight: 300;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-gold), #ffd700);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 3px;
+        }
+
+        .quiz-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 30px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 
+                0 20px 40px var(--shadow-primary),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+            flex: 1;
+        }
+
+        .question-number {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            color: var(--accent-gold);
+            font-weight: 500;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .question-text {
+            font-size: clamp(1.1rem, 4vw, 1.3rem);
+            line-height: 1.6;
+            margin-bottom: 25px;
+            color: var(--text-primary);
+        }
+
+        .answers {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .answer-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            padding: 15px 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Crimson Text', serif;
+            font-size: 1rem;
+            text-align: left;
+            line-height: 1.4;
+        }
+
+        .answer-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .answer-btn.selected {
+            background: linear-gradient(135deg, var(--accent-gold), #b8860b);
+            border-color: var(--accent-gold);
+            color: var(--bg-primary);
+            font-weight: 600;
+        }
+
+        .next-btn {
+            background: linear-gradient(135deg, var(--accent-gold), #b8860b, var(--accent-gold));
+            color: var(--bg-primary);
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 8px 24px rgba(212, 175, 55, 0.3),
+                0 4px 8px rgba(0, 0, 0, 0.2);
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            align-self: center;
+            margin-top: 20px;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .next-btn.enabled {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .next-btn:hover.enabled {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 
+                0 12px 30px rgba(212, 175, 55, 0.4),
+                0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .result-card {
+            text-align: center;
+            display: none;
+        }
+
+        .result-card.show {
+            display: block;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .character-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            border: 4px solid var(--accent-gold);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            background-size: cover;
+            background-position: center;
+        }
+
+        .character-name {
+            font-size: clamp(2rem, 6vw, 2.5rem);
+            font-weight: 600;
+            color: var(--accent-gold);
+            margin-bottom: 15px;
+        }
+
+        .character-description {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            color: var(--text-primary);
+        }
+
+        .result-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .restart-btn {
+            background: linear-gradient(135deg, var(--accent-red), #6b1e2a);
+            color: var(--text-primary);
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+
+        .restart-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 38, 53, 0.4);
+        }
+
+        .home-btn {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .home-btn:hover {
+            color: var(--accent-gold);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px 10px;
+            }
+
+            .quiz-card {
+                padding: 25px 20px;
+            }
+
+            .answer-btn {
+                padding: 12px 15px;
+                font-size: 0.95rem;
+            }
+
+            .character-image {
+                width: 120px;
+                height: 120px;
+            }
+        }
+
+        @media (max-width: 375px) {
+            .back-btn {
+                top: 15px;
+                left: 15px;
+                padding: 8px 12px;
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    
+    <a href="index.html" class="back-btn">← Indietro</a>
+
+    <div class="container">
+        <header class="header">
+            <h1 class="quiz-title">Che personaggio di Dostoevskij sei?</h1>
+            <p class="quiz-subtitle">Scopri quale protagonista delle sue opere riflette la tua personalità</p>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </header>
+
+        <div class="quiz-card" id="quizCard">
+            <div class="question-number" id="questionNumber">Domanda 1 di 10</div>
+            <div class="question-text" id="questionText"></div>
+            <div class="answers" id="answersContainer"></div>
+            <button class="next-btn" id="nextBtn">Avanti</button>
+        </div>
+
+        <div class="quiz-card result-card" id="resultCard">
+            <div class="character-image" id="characterImage"></div>
+            <h2 class="character-name" id="characterName"></h2>
+            <p class="character-description" id="characterDescription"></p>
+            
+            <div class="result-actions">
+                <button class="restart-btn" onclick="restartQuiz()">Rifai il Quiz</button>
+                <a href="index.html" class="home-btn">Torna alle Citazioni</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "Come affronti i momenti di crisi esistenziale?",
+                answers: [
+                    { text: "Mi rifugio nella riflessione profonda e nell'analisi filosofica", character: "raskolnikov" },
+                    { text: "Cerco la redenzione attraverso l'amore e la compassione", character: "alyosha" },
+                    { text: "Mi abbandono alle passioni e agli eccessi", character: "dmitri" },
+                    { text: "Mantengo la mia innocenza e purezza d'animo", character: "myshkin" },
+                    { text: "Uso la razionalità per giustificare le mie azioni", character: "ivan" }
+                ]
+            },
+            {
+                question: "Qual è il tuo rapporto con la fede e la spiritualità?",
+                answers: [
+                    { text: "Dubito costantemente, ma cerco risposte nelle Scritture", character: "alyosha" },
+                    { text: "La fede è un lusso che non posso permettermi", character: "raskolnikov" },
+                    { text: "Credo appassionatamente, ma pecco spesso", character: "dmitri" },
+                    { text: "Vedo il divino in ogni essere umano", character: "myshkin" },
+                    { text: "La fede è irrazionale, preferisco la logica", character: "ivan" }
+                ]
+            },
+            {
+                question: "Come ti comporti nelle relazioni amorose?",
+                answers: [
+                    { text: "Amo intensamente ma in modo tormentato", character: "raskolnikov" },
+                    { text: "Cerco l'amore puro e spirituale", character: "alyosha" },
+                    { text: "Sono passionale e impulsivo", character: "dmitri" },
+                    { text: "Amo con compassione infinita", character: "myshkin" },
+                    { text: "Analizzo troppo i sentimenti", character: "ivan" }
+                ]
+            },
+            {
+                question: "Cosa pensi della sofferenza umana?",
+                answers: [
+                    { text: "È inevitabile e ci purifica", character: "alyosha" },
+                    { text: "È il prezzo da pagare per essere superiori", character: "raskolnikov" },
+                    { text: "Va vissuta pienamente, con tutta la sua intensità", character: "dmitri" },
+                    { text: "Va alleviata con compassione", character: "myshkin" },
+                    { text: "È la prova dell'assenza di Dio", character: "ivan" }
+                ]
+            },
+            {
+                question: "Come reagisci di fronte all'ingiustizia?",
+                answers: [
+                    { text: "Mi ribello violentemente", character: "raskolnikov" },
+                    { text: "Prego e cerco di comprendere il piano divino", character: "alyosha" },
+                    { text: "Agisco d'impulso per difendere i deboli", character: "dmitri" },
+                    { text: "Perdono e mostro compassione anche verso i colpevoli", character: "myshkin" },
+                    { text: "La uso come prova dell'assurdità dell'esistenza", character: "ivan" }
+                ]
+            },
+            {
+                question: "Qual è il tuo approccio verso il denaro?",
+                answers: [
+                    { text: "È uno strumento di potere e libertà", character: "raskolnikov" },
+                    { text: "È una tentazione da cui guardarsi", character: "alyosha" },
+                    { text: "Lo spendo impulsivamente, spesso per gli altri", character: "dmitri" },
+                    { text: "Non mi interessa, preferisco le ricchezze spirituali", character: "myshkin" },
+                    { text: "È necessario per la sopravvivenza, niente di più", character: "ivan" }
+                ]
+            },
+            {
+                question: "Come vedi il tuo ruolo nella società?",
+                answers: [
+                    { text: "Come un outsider che osserva dall'esterno", character: "raskolnikov" },
+                    { text: "Come un servitore dell'umanità", character: "alyosha" },
+                    { text: "Come un protettore dei più deboli", character: "dmitri" },
+                    { text: "Come un esempio di purezza in un mondo corrotto", character: "myshkin" },
+                    { text: "Come un intellettuale che sfida le convenzioni", character: "ivan" }
+                ]
+            },
+            {
+                question: "Cosa ti spaventa di più?",
+                answers: [
+                    { text: "La mediocrità e l'insignificanza", character: "raskolnikov" },
+                    { text: "Perdere la fede", character: "alyosha" },
+                    { text: "Ferire le persone che amo", character: "dmitri" },
+                    { text: "La malvagità umana", character: "myshkin" },
+                    { text: "L'assenza di significato nell'universo", character: "ivan" }
+                ]
+            },
+            {
+                question: "Come tratti le persone che consideri inferiori?",
+                answers: [
+                    { text: "Con distacco, sono diverse da me", character: "raskolnikov" },
+                    { text: "Con umiltà, imparando da loro", character: "alyosha" },
+                    { text: "Con generosità, spesso eccessiva", character: "dmitri" },
+                    { text: "Con compassione infinita", character: "myshkin" },
+                    { text: "Con pazienza, cercando di educarle", character: "ivan" }
+                ]
+            },
+            {
+                question: "Quale descrizione si adatta meglio al tuo carattere?",
+                answers: [
+                    { text: "Tormentato genio incompreso", character: "raskolnikov" },
+                    { text: "Anima pura in cerca della verità", character: "alyosha" },
+                    { text: "Cuore passionale e generoso", character: "dmitri" },
+                    { text: "Santo innocente in un mondo malvagio", character: "myshkin" },
+                    { text: "Intellettuale scettico e razionale", character: "ivan" }
+                ]
+            }
+        ];
+
+        const characters = {
+            raskolnikov: {
+                name: "Raskolnikov",
+                description: "Sei un'anima tormentata come Rodion Raskolnikov di 'Delitto e Castigo'. Possiedi un'intelligenza superiore che ti porta spesso all'isolamento. Lotti con questioni morali profonde e credi che alcune persone siano destinate a trascendere le regole ordinarie della società. La tua natura contemplativa nasconde una tempesta interiore di dubbi e ambizioni.",
+                image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 150 150'%3E%3Cdefs%3E%3CradialGradient id='face' cx='50%25' cy='40%25'%3E%3Cstop offset='0%25' style='stop-color:%23f4c2a1'/%3E%3Cstop offset='100%25' style='stop-color:%23d4935a'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='75' cy='75' r='70' fill='%23333'/%3E%3Cellipse cx='75' cy='70' rx='45' ry='50' fill='url(%23face)'/%3E%3Cpath d='M 50 60 Q 65 55 80 60' stroke='%23654321' stroke-width='3' fill='none'/%3E%3Ccircle cx='60' cy='65' r='3' fill='%23333'/%3E%3Ccircle cx='90' cy='65' r='3' fill='%23333'/%3E%3Cpath d='M 70 80 Q 75 85 80 80' stroke='%238B4513' stroke-width='2' fill='none'/%3E%3Cpath d='M 65 90 Q 75 95 85 90' stroke='%23333' stroke-width='2' fill='none'/%3E%3Cpath d='M 30 50 Q 75 30 120 50 Q 110 20 75 25 Q 40 20 30 50' fill='%232c1810'/%3E%3C/svg%3E"
+            },
+            alyosha: {
+                name: "Alyosha Karamazov",
+                description: "Sei puro di cuore come Alexei 'Alyosha' Karamazov de 'I Fratelli Karamazov'. Possiedi una fede incrollabile nell'umanità e cerchi sempre il bene negli altri. La tua natura compassionevole e il tuo desiderio di pace ti rendono un mediatore naturale. Credi nell'amore come forza redentrice universale.",
+                image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 150 150'%3E%3Cdefs%3E%3CradialGradient id='face2' cx='50%25' cy='40%25'%3E%3Cstop offset='0%25' style='stop-color:%23f9d5b5'/%3E%3Cstop offset='100%25' style='stop-color:%23e6b58a'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='75' cy='75' r='70' fill='%238B4513'/%3E%3Cellipse cx='75' cy='70' rx='40' ry='45' fill='url(%23face2)'/%3E%3Ccircle cx='62' cy='62' r='2' fill='%23333'/%3E%3Ccircle cx='88' cy='62' r='2' fill='%23333'/%3E%3Cpath d='M 70 75 Q 75 78 80 75' stroke='%238B4513' stroke-width='1' fill='none'/%3E%3Cpath d='M 68 85 Q 75 88 82 85' stroke='%23333' stroke-width='1.5' fill='none'/%3E%3Cpath d='M 35 45 Q 75 25 115 45 Q 105 15 75 20 Q 45 15 35 45' fill='%23654321'/%3E%3Ccircle cx='75' cy='30' r='8' fill='%23FFD700' opacity='0.6'/%3E%3C/svg%3E"
+            },
+            dmitri: {
+                name: "Dmitri Karamazov",
+                description: "Sei passionale come Dmitri 'Mitya' Karamazov de 'I Fratelli Karamazov'. Vivi la vita con intensità estrema, oscillando tra generosità estrema e impulsi distruttivi. Il tuo cuore ardente ti porta ad amare profondamente ma anche a soffrire tremendamente. Sei capace di grandi gesti di nobiltà, ma anche di momenti di perdizione.",
+                image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 150 150'%3E%3Cdefs%3E%3CradialGradient id='face3' cx='50%25' cy='40%25'%3E%3Cstop offset='0%25' style='stop-color:%23f4c2a1'/%3E%3Cstop offset='100%25' style='stop-color:%23d4935a'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='75' cy='75' r='70' fill='%238B2635'/%3E%3Cellipse cx='75' cy='70' rx='45' ry='50' fill='url(%23face3)'/%3E%3Cpath d='M 45 55 Q 65 50 85 55 Q 105 55 105 55' stroke='%23654321' stroke-width='4' fill='none'/%3E%3Ccircle cx='60' cy='65' r='3' fill='%23333'/%3E%3Ccircle cx='90' cy='65' r='3' fill='%23333'/%3E%3Cpath d='M 70 80 Q 75 85 80 80' stroke='%238B4513' stroke-width='2' fill='none'/%3E%3Cpath d='M 65 90 Q 75 98 85 90' stroke='%23333' stroke-width='3' fill='none'/%3E%3Cpath d='M 25 40 Q 75 20 125 40 Q 115 10 75 15 Q 35 10 25 40' fill='%234A2C17'/%3E%3C/svg%3E"
+            },
+            myshkin: {
+                name: "Principe Myshkin",
+                description: "Sei innocente e puro come il Principe Lev Myshkin de 'L'Idiota'. Possiedi una rara combinazione di intelligenza e innocenza che ti rende unico nel mondo. La tua capacità di vedere il bene in tutti e di amare incondizionatamente ti rende vulnerabile, ma anche straordinariamente prezioso per l'umanità.",
+                image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 150 150'%3E%3Cdefs%3E%3CradialGradient id='face4' cx='50%25' cy='40%25'%3E%3Cstop offset='0%25' style='stop-color:%23fae5d3'/%3E%3Cstop offset='100%25' style='stop-color:%23e8c4a0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='75' cy='75' r='70' fill='%232E86AB'/%3E%3Cellipse cx='75' cy='70' rx='42' ry='48' fill='url(%23face4)'/%3E%3Ccircle cx='62' cy='63' r='2.5' fill='%234169E1'/%3E%3Ccircle cx='88' cy='63' r='2.5' fill='%234169E1'/%3E%3Cpath d='M 70 75 Q 75 77 80 75' stroke='%23D2B48C' stroke-width='1' fill='none'/%3E%3Cpath d='M 68 85 Q 75 87 82 85' stroke='%23333' stroke-width='1' fill='none'/%3E%3Cpath d='M 35 45 Q 75 25 115 45 Q 105 15 75 20 Q 45 15 35 45' fill='%23C0A080'/%3E%3Cpath d='M 60 95 Q 75 100 90 95' stroke='%23FFB6C1' stroke-width='2' fill='none'/%3E%3C/svg%3E"
+            },
+            ivan: {
+                name: "Ivan Karamazov",
+                description: "Sei intellettuale e tormentato come Ivan Karamazov de 'I Fratelli Karamazov'. La tua mente brillante ti porta a questioni filosofiche profonde sul senso dell'esistenza e la giustizia divina. Lotti con il dubbio e la ribellione contro un mondo che percepisci come irrazionale e crudele. La tua ricerca della verità è tanto nobile quanto dolorosa.",
+                image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 150 150'%3E%3Cdefs%3E%3CradialGradient id='face4' cx='50%25' cy='40%25'%3E%3Cstop offset='0%25' style='stop-color:%23fae5d3'/%3E%3Cstop offset='100%25' style='stop-color:%23e8c4a0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='75' cy='75' r='70' fill='%232E86AB'/%3E%3Cellipse cx='75' cy='70' rx='42' ry='48' fill='url(%23face4)'/%3E%3Ccircle cx='62' cy='63' r='2.5' fill='%234169E1'/%3E%3Ccircle cx='88' cy='63' r='2.5' fill='%234169E1'/%3E%3Cpath d='M 70 75 Q 75 77 80 75' stroke='%23D2B48C' stroke-width='1' fill='none'/%3E%3Cpath d='M 68 85 Q 75 87 82 85' stroke='%23333' stroke-width='1' fill='none'/%3E%3Cpath d='M 35 45 Q 75 25 115 45 Q 105 15 75 20 Q 45 15 35 45' fill='%23C0A080'/%3E%3Cpath d='M 60 95 Q 75 100 90 95' stroke='%23FFB6C1' stroke-width='2' fill='none'/%3E%3C/svg%3E"
+            }
+        };
+
+        let currentQuestionIndex = 0;
+        let scores = {
+            raskolnikov: 0,
+            alyosha: 0,
+            dmitri: 0,
+            myshkin: 0,
+            ivan: 0
+        };
+
+        const questionNumberElement = document.getElementById('questionNumber');
+        const questionTextElement = document.getElementById('questionText');
+        const answersContainer = document.getElementById('answersContainer');
+        const nextButton = document.getElementById('nextBtn');
+        const progressFill = document.getElementById('progressFill');
+        const quizCard = document.getElementById('quizCard');
+        const resultCard = document.getElementById('resultCard');
+        const characterImageElement = document.getElementById('characterImage');
+        const characterNameElement = document.getElementById('characterName');
+        const characterDescriptionElement = document.getElementById('characterDescription');
+
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = window.innerWidth < 768 ? 15 : 25;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (4 + Math.random() * 4) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        function showQuestion() {
+            // Aggiorna il testo e i bottoni della domanda
+            const currentQuestion = questions[currentQuestionIndex];
+            
+            questionNumberElement.textContent = `Domanda ${currentQuestionIndex + 1} di ${questions.length}`;
+            questionTextElement.textContent = currentQuestion.question;
+            answersContainer.innerHTML = '';
+            
+            currentQuestion.answers.forEach(answer => {
+                const button = document.createElement('button');
+                button.classList.add('answer-btn');
+                button.textContent = answer.text;
+                button.dataset.character = answer.character;
+                button.addEventListener('click', selectAnswer);
+                answersContainer.appendChild(button);
+            });
+            
+            // Aggiorna la barra di progresso
+            updateProgressBar();
+            
+            // Disabilita il pulsante "Avanti"
+            nextButton.classList.remove('enabled');
+        }
+
+        function updateProgressBar() {
+            const progress = (currentQuestionIndex / questions.length) * 100;
+            progressFill.style.width = `${progress}%`;
+        }
+
+        function selectAnswer(e) {
+            // Rimuove la selezione da tutti i bottoni
+            document.querySelectorAll('.answer-btn').forEach(btn => btn.classList.remove('selected'));
+            
+            // Aggiunge la selezione al bottone cliccato
+            e.target.classList.add('selected');
+            
+            // Abilita il pulsante "Avanti"
+            nextButton.classList.add('enabled');
+        }
+
+        function handleNextQuestion() {
+            // Controlla se una risposta è stata selezionata
+            const selectedButton = document.querySelector('.answer-btn.selected');
+            if (!selectedButton) {
+                return; // Non fa nulla se nessuna risposta è selezionata
+            }
+            
+            // Incrementa il punteggio del personaggio scelto
+            const selectedCharacter = selectedButton.dataset.character;
+            scores[selectedCharacter]++;
+            
+            currentQuestionIndex++;
+            
+            if (currentQuestionIndex < questions.length) {
+                // Passa alla prossima domanda
+                showQuestion();
+            } else {
+                // Finisce il quiz e mostra il risultato
+                showResult();
+            }
+        }
+
+        function showResult() {
+            // Nasconde la card del quiz
+            quizCard.style.display = 'none';
+            
+            // Aggiorna la barra di progresso al 100%
+            progressFill.style.width = '100%';
+
+            // Determina il personaggio con il punteggio più alto
+            let finalCharacter = '';
+            let maxScore = -1;
+            
+            for (const character in scores) {
+                if (scores[character] > maxScore) {
+                    maxScore = scores[character];
+                    finalCharacter = character;
+                }
+            }
+            
+            // Popola la card del risultato
+            const result = characters[finalCharacter];
+            characterImageElement.style.backgroundImage = `url('${result.image}')`;
+            characterNameElement.textContent = result.name;
+            characterDescriptionElement.textContent = result.description;
+            
+            // Mostra la card del risultato con animazione
+            resultCard.classList.add('show');
+        }
+
+        window.restartQuiz = function() {
+            // Resetta lo stato del quiz
+            currentQuestionIndex = 0;
+            scores = {
+                raskolnikov: 0,
+                alyosha: 0,
+                dmitri: 0,
+                myshkin: 0,
+                ivan: 0
+            };
+            
+            // Nasconde la card del risultato e mostra quella del quiz
+            resultCard.classList.remove('show');
+            quizCard.style.display = 'block';
+            
+            // Riavvia il quiz
+            showQuestion();
+        }
+
+        // Event Listeners
+        nextButton.addEventListener('click', handleNextQuestion);
+
+        // Inizializzazione
+        document.addEventListener('DOMContentLoaded', () => {
+            createParticles();
+            showQuestion();
+        });
+    </script>
+</body>
+</html>
